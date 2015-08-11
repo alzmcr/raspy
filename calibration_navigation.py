@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 from model import Model
 from accelerometer import process
 from time import sleep
@@ -67,6 +68,7 @@ def process_df(df):
     df[['x','y','z']] = df[['x','y','z']].apply(process)
     # create new features
     df[['x5','y5','z5']] = df.groupby(level=['fname','seq','action'])[['x','y','z']].apply(lambda x: pd.rolling_mean(x,5,1))
+
     # cleaning
     df[df.columns] = df.groupby(level=['fname','seq','action'])[df.columns].ffill().bfill()
     idx = df[['x','y','z']].isnull().sum(axis=1) == 0
@@ -76,8 +78,10 @@ def process_df(df):
 
 if __name__ == '__main__':
     from sklearn import ensemble
-    files = ['carlog_20150809_172042','carlog_20150809_172222','carlog_20150809_172322','carlog_20150809_172412',
-             'carlog_20150809_172455','carlog_20150809_172550','carlog_20150809_172646','carlog_20150809_224506']
+    files = ['carlog_20150811_224249','carlog_20150811_224349','carlog_20150811_224452','carlog_20150811_224550',
+             'carlog_20150811_224819','carlog_20150811_224909','carlog_20150811_234306','carlog_20150811_234353',
+             'carlog_20150811_234550',
+    ]
     #files = ['carlog_20150811_082327']
     files = ['data/navigation_calibration/'+f+'.csv' for f in files]
 
@@ -93,16 +97,19 @@ if __name__ == '__main__':
 
 
 def train_model(df, model):
-    X = df[['x', 'y', 'z', 'x5', 'y5', 'z5']]               # train set
-    y = df.reset_index()['action']                          # target
-    files = df.set_index()['files'].unique().tolist()       # files used for train the model
+    X = df[['x', 'y', 'z', 'x5', 'y5', 'z5']]                   # train set
+    y = df.reset_index()['action']                              # target
+    files = df.reset_index()['fname'].unique().tolist()         # files used for train the model
 
-    scores = []
+    trscores, cvscores = [],[]
     for i in range(len(files)):
-        itr = X.reset_index()['fname'].values == files[i]; icv = -itr
+        icv = X.reset_index()['fname'].values == files[i]; itr = -icv
         model = model.fit(X[itr],y[itr])
-        x1 = X[icv].groupby(level=['seq','action']).apply(lambda x: model.labels[model.predict_proba(x).sum(axis=0).argmax()])
-        scores.append((x1.reset_index()[0]==x1.action).mean())
+        x1 = X[icv].groupby(level=['fname','seq','action']).apply(lambda x: model.labels[model.predict_proba(x).sum(axis=0).argmax()])
+        x2 = X[itr].groupby(level=['fname','seq','action']).apply(lambda x: model.labels[model.predict_proba(x).sum(axis=0).argmax()])
+        cvscores.append((x1.reset_index()[0]==x1.reset_index().action).mean())
+        trscores.append((x2.reset_index()[0]==x2.reset_index().action).mean())
+    print np.mean(trscores), np.mean(cvscores)
 
     return model.fit(X,y)
 

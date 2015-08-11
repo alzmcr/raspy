@@ -60,14 +60,20 @@ class Rover():
         if seconds is not None:
             sleep(seconds); self.stop()
 
-    def left(self, seconds=None):
-        self.m1.rw(); self.m2.fw()
+    def left(self, seconds=None, motor=None):
+        if motor is None: self.m1.rw(); self.m2.fw()
+        elif motor == 1: self.m1.rw()
+        elif motor == 2: self.m2.fw()
+        else: raise Exception('Wrong motor specified: %s' %motor)
         self.motorlog.append([time(),'left'])
         if seconds is not None:
             sleep(seconds); self.stop()
 
-    def right(self, seconds=None):
-        self.m1.fw(); self.m2.rw()
+    def right(self, seconds=None, motor=None):
+        if motor is None: self.m1.fw(); self.m2.rw()
+        elif motor == 1: self.m1.fw()
+        elif motor == 2: self.m2.rw()
+        else: raise Exception('Wrong motor specified: %s' %motor)
         self.motorlog.append([time(),'right'])
         if seconds is not None:
             sleep(seconds); self.stop()
@@ -78,7 +84,7 @@ class Rover():
         self.stop()                                 # stop car
         self.acc.sampler(seconds, interval)         # start reading accelerometer
 
-    def save_log(self, savefile=True):
+    def save_log(self, savepath=None):
         self.stop()
         acclog = self.acc.get_samples()
 
@@ -90,33 +96,19 @@ class Rover():
         # reset data with star date
         data.index = data.index.values - data.index.values.min()
 
-        if savefile:
-            data.to_csv(datetime.now().strftime('carlog_%Y%m%d_%H%M%S.csv'))
+        if savepath is not None:
+            if savepath == True: savepath = ''
+            data.to_csv(datetime.now().strftime(savepath+'carlog_%Y%m%d_%H%M%S.csv'))
 
         return data
+
+
 
 m1 = Motor('left',35,37,False)
 m2 = Motor('left',38,40,True)
 
 r = Rover(m1,m2)
 
-
-def train_data():
-    r.init_log()
-    sleep(1)
-    r.left(2); sleep(1)
-    r.right(2); sleep(1)
-    r.fw(2); sleep(1)
-    r.rw(2); sleep(1)
-    r.left(2); sleep(1)
-    r.right(2); sleep(1)
-    r.fw(2); sleep(1)
-    r.rw(2); sleep(1)
-    r.left(2); sleep(1)
-    r.right(2); sleep(1)
-    r.fw(2); sleep(1)
-    r.rw(2); sleep(1)
-    r.save_log()
 
 if __name__ == '__main__':
     r.init_log()

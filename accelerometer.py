@@ -1,10 +1,10 @@
-import smbus
 import numpy as np
 from time import time, sleep
 from threading import Thread
 
 class Accel():
     def __init__(self):
+        import smbus
         self.b = smbus.SMBus(1)
         self.setUp()
         self.continue_sampling = True
@@ -59,6 +59,13 @@ class Accel():
     def get_samples(self):
         self.stop_sampling()
         return self.samples
+
+def process(z):
+    z = z.diff()
+    z.iloc[z.values > (256/2)] -= 256
+    z.iloc[z.values < -(256/2)] += 256
+    return z
+
 
 if __name__ == "__main__":
     acc = Accel()

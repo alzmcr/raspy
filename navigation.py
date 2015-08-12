@@ -1,3 +1,4 @@
+import keypad
 import RPi.GPIO as GPIO
 from time import time, sleep
 from accelerometer import Accel
@@ -44,6 +45,17 @@ class Rover():
         self.acc = Accel()
         self.motorlog = []
 
+    def keycontrol(self):
+        mapping = {
+            # KEY BINDINGS: key to function (with default value)
+            'w': 'fw', 's': 'rw', 'a': 'left', 'd': 'right',
+            ' ': 'stop', 'r': 'init_log', 't': 'save_log'
+        }
+        print "ROVER KEYPAD: initialized"
+        keypad.keypad(self, mapping)
+        print "ROVER KEYPAD: terminated"
+
+    # DIRECTION
     def stop(self):
         self.m1.stop(); self.m2.stop()
         self.motorlog.append([time(),'stop'])
@@ -79,7 +91,7 @@ class Rover():
             sleep(seconds); self.stop()
 
     # LOGGING
-    def init_log(self, seconds=60, interval=0.010):
+    def init_log(self, seconds=3600, interval=0.010):
         self.motorlog = []; self.acc.samples = []   # reset motor logger
         self.stop()                                 # stop car
         self.acc.sampler(seconds, interval)         # start reading accelerometer
@@ -103,21 +115,8 @@ class Rover():
         return data
 
 
-
-m1 = Motor('left',35,37,False)
+m1 = Motor('left',35,37,True)
 m2 = Motor('left',38,40,True)
 
 r = Rover(m1,m2)
-
-
-if __name__ == '__main__':
-    r.init_log()
-    sleep(1)
-    r.left(1.25); sleep(2.5)     # turn left for 1.25 sec
-    r.right(1.25); sleep(2.5)    # turn right for 1.25 sec
-    r.fw(3); sleep(2.5)
-    r.right(1.25*4); sleep(2.5)    # turn right for 1.25*4 sec
-    r.left(1.25*4);  sleep(2.5)    # turn right for 1.25*4 sec
-    r.rw(3);
-    r.save_log()
 

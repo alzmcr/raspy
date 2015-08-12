@@ -40,7 +40,8 @@ def calibrate(r, model=None):
     r.right(2,motor=1); sleep(1); r.right(2,motor=2); sleep(1)  # sequence: 5,7
     # end of calibration movements
     # get log, process data and remove stops
-    data = process_df(r.save_log(savefile=False))
+    logdata = r.save_log(); logdata['fname'] = 'dropme'
+    logdata.index.name = 'time'; data = process_df(logdata)
     preds = data[model.features].groupby(level=['seq']).apply(lambda x: model.labels[model.predict_proba(x).sum(axis=0).argmax()])
 
     # check if movements are correctly calibrated
@@ -49,11 +50,11 @@ def calibrate(r, model=None):
         return True
     else:
         if preds[1] == 'left' and preds[5] == 'right':
-            r.m1.gpio1_is_fw = -r.m1.gpio1_is_fw
+            r.m2.gpio1_is_fw = not r.m2.gpio1_is_fw
             print "Rover re-calibrated changing direction of Motor 1, testing..."
             return calibrate(r, model)
         elif preds[3] == 'left' and preds[7] == 'right':
-            r.m2.gpio1_is_fw = -r.m2.gpio1_is_fw
+            r.m1.gpio1_is_fw = not r.m1.gpio1_is_fw
             print "Rover re-calibrated changing direction of Motor 2, testing..."
             return calibrate(r, model)
         else:
@@ -72,7 +73,7 @@ def process_df(df):
     # cleaning
     df[df.columns] = df.groupby(level=['fname','seq','action'])[df.columns].ffill().bfill()
     idx = df[['x','y','z']].isnull().sum(axis=1) == 0
-    df = df[idx].query('action!="stop"').query('action in ("left","right")')
+    df = df[idx].query('action!="stop"')#.query('action in ("fw","rw")')
     # return df
     return df
 
@@ -95,6 +96,8 @@ if __name__ == '__main__':
     m = Model.fit_create(rf, X, y)
     m.dump('models/rover_calibration.pkl')
 
+    df = data; model = m
+
 
 def train_model(df, model):
     X = df[['x', 'y', 'z', 'x5', 'y5', 'z5']]                   # train set
@@ -105,8 +108,8 @@ def train_model(df, model):
     for i in range(len(files)):
         icv = X.reset_index()['fname'].values == files[i]; itr = -icv
         model = model.fit(X[itr],y[itr])
-        x1 = X[icv].groupby(level=['fname','seq','action']).apply(lambda x: model.labels[model.predict_proba(x).sum(axis=0).argmax()])
-        x2 = X[itr].groupby(level=['fname','seq','action']).apply(lambda x: model.labels[model.predict_proba(x).sum(axis=0).argmax()])
+        x1 = X[icv].groupby(level=['fname','seq','action']).apply(lambda x: model.labels[model.predict_proba(x).mean(axis=0).argmax()])
+        x2 = X[itr].groupby(level=['fname','seq','action']).apply(lambda x: model.labels[model.predict_proba(x).mean(axis=0).argmax()])
         cvscores.append((x1.reset_index()[0]==x1.reset_index().action).mean())
         trscores.append((x2.reset_index()[0]==x2.reset_index().action).mean())
     print np.mean(trscores), np.mean(cvscores)

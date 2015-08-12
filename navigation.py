@@ -117,9 +117,9 @@ class Servo():
     def __init__(self, gpio):
         GPIO.setup(gpio, GPIO.OUT)
         self.gpio = gpio
-        self.left    = 0.75
-        self.right   = 2.5
-        self.center  = 1.625
+        self.pleft    = 0.75
+        self.pright   = 2.5
+        self.pcenter  = 1.625
         self.hz      = 50
         self.mscycle = 1000 / self.hz
         self.pwm = GPIO.PWM(gpio, self.hz)
@@ -127,11 +127,14 @@ class Servo():
     def move(self, position):
         self.pwm.start(position * 100 / self.mscycle); sleep(1); self.pwm.stop()
 
-    def left(self): self.move(self.left)
+    def left(self): self.move(self.pleft)
 
-    def center(self): self.move(self.center)
+    def center(self): self.move(self.pcenter)
 
-    def right(self): self.move(self.right)
+    def right(self): self.move(self.pright)
+
+    def stop(self):
+        self.pwm.stop()
 
 s1, s2 = Servo(8),Servo(10)
 

@@ -81,7 +81,7 @@ if __name__ == '__main__':
     from sklearn import ensemble
     files = ['carlog_20150811_224249','carlog_20150811_224349','carlog_20150811_224452','carlog_20150811_224550',
              'carlog_20150811_224819','carlog_20150811_224909','carlog_20150811_234306','carlog_20150811_234353',
-             'carlog_20150811_234550',
+             'carlog_20150811_234550','carlog_20150812_213712',
     ]
     #files = ['carlog_20150811_082327']
     files = ['data/navigation_calibration/'+f+'.csv' for f in files]

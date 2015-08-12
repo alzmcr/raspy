@@ -37,7 +37,6 @@ class Motor():
         GPIO.output(self.gpio1, not self.gpio1_is_fw); GPIO.output(self.gpio2, self.gpio1_is_fw)
         if seconds is not None: sleep(seconds); self.stop()
 
-
 class Rover():
     def __init__(self, m1, m2):
         self.m1 = m1
@@ -113,6 +112,28 @@ class Rover():
             data.to_csv(datetime.now().strftime(savepath+'carlog_%Y%m%d_%H%M%S.csv'))
 
         return data
+
+class Servo():
+    def __init__(self, gpio):
+        GPIO.setup(gpio, GPIO.OUT)
+        self.gpio = gpio
+        self.left    = 0.75
+        self.right   = 2.5
+        self.center  = 1.625
+        self.hz      = 50
+        self.mscycle = 1000 / self.hz
+        self.pwm = GPIO.PWM(gpio, self.hz)
+
+    def move(self, position):
+        self.pwm.start(position * 100 / self.mscycle); sleep(1); self.pwm.stop()
+
+    def left(self): self.move(self.left)
+
+    def center(self): self.move(self.center)
+
+    def right(self): self.move(self.right)
+
+s1, s2 = Servo(8),Servo(10)
 
 
 m1 = Motor('left',35,37,True)

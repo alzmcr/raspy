@@ -1,9 +1,9 @@
-import time
 import picamera
 import numpy as np
 import io
 from scipy import misc
 from datetime import datetime
+from time import time, sleep
 
 class Camera():
     def __init__(self, w=320, h=240):
@@ -46,7 +46,6 @@ class Camera():
 
     def __repr__(self):
         return "Camera instance: resolution (%ix%i)" % (self.w, self.h)
-
 
 
 

@@ -52,7 +52,7 @@ class Camera():
 
 
 class Servo():
-    def __init__(self, gpio, pleft=0.650, pright=1.900):
+    def __init__(self, gpio, pleft=0.750, pright=1.605):
         GPIO.setup(gpio, GPIO.OUT)
         self.gpio = gpio
         self.pleft    = pleft
@@ -117,6 +117,7 @@ class Jib():
     def dw(self): self.movey(+90)
 
 
-s1, s2 = Servo(8), Servo(10)
+s1 = Servo(8,  pleft=0.550, pright=1.805)   # X-axis
+s2 = Servo(10, pleft=0.700, pright=1.850)   # Y-axis
 
 jib = Jib(s1,s2)

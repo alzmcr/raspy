@@ -38,17 +38,22 @@ class Motor():
         if seconds is not None: sleep(seconds); self.stop()
 
 class Rover():
-    def __init__(self, m1, m2):
+    def __init__(self, m1, m2, jib=None):
         self.m1 = m1
         self.m2 = m2
         self.acc = Accel()
         self.motorlog = []
+        self.jib = jib
 
     def keycontrol(self):
         mapping = {
             # KEY BINDINGS: key to function (with default value)
+            # ROVER KEYS
             'w': 'fw', 's': 'rw', 'a': 'left', 'd': 'right',
-            ' ': 'stop', 'r': 'init_log', 't': 'save_log'
+            ' ': 'stop', 'r': 'init_log', 't': 'save_log',
+            # JIB KEYS
+            'i': 'jib.moveup', 'j': 'jib.moveleft',
+            'k': 'jib.movedw', 'l': 'jib.moveright'
         }
         print "ROVER KEYPAD: initialized"
         keypad.keypad(self, mapping)
@@ -113,9 +118,10 @@ class Rover():
 
         return data
 
+from camera import jib, s1, s2
 
 m1 = Motor('left',35,37,True)
 m2 = Motor('left',38,40,True)
 
-r = Rover(m1,m2)
+r = Rover(m1,m2, jib)
 

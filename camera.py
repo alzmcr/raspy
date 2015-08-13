@@ -52,12 +52,12 @@ class Camera():
 
 
 class Servo():
-    def __init__(self, gpio):
+    def __init__(self, gpio, pleft=0.650, pright=1.900):
         GPIO.setup(gpio, GPIO.OUT)
         self.gpio = gpio
-        self.pleft    = 0.650
-        self.pright   = 1.900
-        self.pcenter  = 1.275
+        self.pleft    = pleft
+        self.pright   = pright
+        self.pcenter  = (1.*pright - pleft) / 2 + pleft
         self.hz       = 50
         self.pcurrent = None
         self.stubtime = 0.100
@@ -90,6 +90,32 @@ class Servo():
         ratio = (degree+90) / 180.
         self.move((self.pright - self.pleft) * ratio + self.pleft)
 
+class Jib():
+    def __init__(self, servo_x, servo_y):
+        self.sx = servo_x   # servo on X-axis
+        self.sy = servo_y   # servo on Y-axis
+        self.center()       # center the Jib
+
+    # MAIN MOVE FUNCTION
+    def movex(self, angle): self.sx.angle(angle); self.anglex = angle
+    def movey(self, angle): self.sy.angle(angle); self.angley = angle
+
+    # INCREMENTAL MOVE FUNCTION
+    def moveleft(self, a=5): self.movex(self.anglex - a)
+    def moveright(self, a=5): self.movex(self.anglex + a)
+    def moveup(self, a=5): self.movey(self.angley - a)
+    def movedw(self, a=5): self.movey(self.angley + a)
+
+    # PREDEFINED MOVEMENTS
+    def centerx(self): self.movex(0)
+    def centery(self): self.movey(0)
+    def center(self): self.movex(0); self.movey(0)
+    def left(self): self.movex(-90)
+    def right(self): self.movex(+90)
+    def up(self): self.movey(-90)
+    def dw(self): self.movey(+90)
+
+
 s1, s2 = Servo(8), Servo(10)
 
-
+jib = Jib(s1,s2)

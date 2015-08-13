@@ -73,7 +73,7 @@ def process_df(df):
     # cleaning
     df[df.columns] = df.groupby(level=['fname','seq','action'])[df.columns].ffill().bfill()
     idx = df[['x','y','z']].isnull().sum(axis=1) == 0
-    df = df[idx].query('action!="stop"')#.query('action in ("fw","rw")')
+    df = df[idx]#.query('action!="stop"')#.query('action in ("fw","rw")')
     # return df
     return df
 
@@ -83,7 +83,7 @@ if __name__ == '__main__':
              'carlog_20150811_224819','carlog_20150811_224909','carlog_20150811_234306','carlog_20150811_234353',
              'carlog_20150811_234550','carlog_20150812_213712',
     ]
-    #files = ['carlog_20150811_082327']
+    #files = ['carlog_20150812_213712']
     files = ['data/navigation_calibration/'+f+'.csv' for f in files]
 
 

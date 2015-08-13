@@ -89,6 +89,7 @@ class Servo():
         degree = max(min(90,degree),-90)
         ratio = (degree+90) / 180.
         self.move((self.pright - self.pleft) * ratio + self.pleft)
+        return degree
 
 class Jib():
     def __init__(self, servo_x, servo_y):
@@ -97,8 +98,8 @@ class Jib():
         self.center()       # center the Jib
 
     # MAIN MOVE FUNCTION
-    def movex(self, angle): self.sx.angle(angle); self.anglex = angle
-    def movey(self, angle): self.sy.angle(angle); self.angley = angle
+    def movex(self, angle): self.anglex = self.sx.angle(angle)
+    def movey(self, angle): self.angley = self.sy.angle(angle)
 
     # INCREMENTAL MOVE FUNCTION
     def moveleft(self, a=5): self.movex(self.anglex - a)

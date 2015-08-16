@@ -6,6 +6,8 @@ from datetime import datetime
 
 if GPIO.getmode() == -1: GPIO.setmode(GPIO.BOARD)
 
+def interp(x,x0,x1,y0,y1): return y0 + (y1-y0) * (float(x-x0)/(x1-x0))
+
 class Motor():
     def __init__(self, name, gpio1, gpio2, gpio1_is_fw=True, use_pwm=True):
         self.name = name                # motor name
@@ -60,12 +62,13 @@ class Motor():
         if seconds is not None: sleep(seconds); self.stop()
 
 class Rover():
-    def __init__(self, m1, m2, jib=None, verbose=False):
+    def __init__(self, m1, m2, jib=None, dist=None, verbose=False):
         self.m1 = m1
         self.m2 = m2
         self.acc = Accel()
-        self.motorlog = []
+        self.dist = dist
         self.jib = jib
+        self.motorlog = []
         # CURRENT STATE
         self.state = 'stop'
         self.power = 0
@@ -142,6 +145,7 @@ class Rover():
             if steerpower >=50:
                 # STRONG TURN (inverted direction on motors)
                 m1power = ((steerpower-50)*2/100.)*self.power
+                #m1power = interp(steerpower, 0, 100, 30, 100)
                 self.m1.rw(power=m1power) if self.state == 'fw' else self.m1.fw(power=m1power)
                 #self.m2.fw(power=(power-50)*2) if self.state == 'rw' else self.m2.rw(power=(power-50)*2)
             else:
@@ -207,9 +211,10 @@ class Rover():
         return data
 
 from camera import jib, s1, s2
+from distance import dist
 
 m1 = Motor('left',35,37,True)
 m2 = Motor('left',38,40,True)
 
-r = Rover(m1,m2, jib)
+r = Rover(m1,m2, jib, dist)
 

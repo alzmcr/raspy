@@ -194,7 +194,7 @@ class Rover():
         else: return None
 
     def print_distance(self):
-        dist = self.measure()
+        dist = self.distance()
         if dist is None: print "Distance Measurement not initialized"
         else: print "Distance: %.2fcm" % dist
 

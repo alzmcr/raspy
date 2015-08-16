@@ -84,7 +84,9 @@ class Rover():
             ' ': 'stop', 'r': 'init_log', 't': 'save_log',
             # JIB KEYS
             'i': 'jib.moveup', 'j': 'jib.moveleft',
-            'k': 'jib.movedw', 'l': 'jib.moveright'
+            'k': 'jib.movedw', 'l': 'jib.moveright',
+            # MEASURE DISTANCE
+            'm': 'print_distance'
         }
         print "ROVER KEYPAD: initialized"
         keypad.keypad(self, mapping)
@@ -185,6 +187,16 @@ class Rover():
 
         if seconds is not None:
             sleep(seconds); self.stop()
+
+    def distance(self):
+        if self.dist is not None:
+            return self.dist.measure()
+        else: return None
+
+    def print_distance(self):
+        dist = self.measure()
+        if dist is None: print "Distance Measurement not initialized"
+        else: print "Distance: %.2fcm" % dist
 
     # LOGGING
     def init_log(self, seconds=3600, interval=0.010):

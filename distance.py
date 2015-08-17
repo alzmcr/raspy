@@ -28,6 +28,8 @@ class Distance():
         GPIO.output(self.trig, True); sleep(0.00001); GPIO.output(self.trig, False)
         GPIO.wait_for_edge(self.echo, GPIO.BOTH); pulse_start = time()
         GPIO.wait_for_edge(self.echo, GPIO.BOTH); pulse_end = time()
+        # remove timer - we've got results before the timeout time
+        signal.setitimer(signal.ITIMER_REAL, 0)
         return round(( pulse_end - pulse_start) * 17150,2)
 
     def measure(self, times=3):

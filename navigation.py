@@ -147,14 +147,11 @@ class Rover():
             if steerpower >=50:
                 # STRONG TURN (inverted direction on motors)
                 m1power = ((steerpower-50)*2/100.)*self.power
-                #m1power = interp(steerpower, 0, 100, 30, 100)
                 self.m1.rw(power=m1power) if self.state == 'fw' else self.m1.fw(power=m1power)
-                #self.m2.fw(power=(power-50)*2) if self.state == 'rw' else self.m2.rw(power=(power-50)*2)
             else:
                 # LIGHT TURN  (same direction, but slower motors)
                 m1power = ((50-steerpower)*2/100.)*self.power
                 self.m1.fw(power=m1power) if self.state == 'fw' else self.m1.rw(power=m1power)
-                #self.m2.rw(power=(50-power)*2) if self.state == 'rw' else self.m2.fw(power=(50-power)*2)
         else:
             self.m1.rw(power=self.power); self.m2.fw(power=self.power)
             m1power, m2power = self.power, self.power
@@ -173,12 +170,10 @@ class Rover():
                 # STRONG TURN (inverted direction on motors)
                 m2power = ((steerpower-50)*2/100.)*self.power
                 self.m2.fw(power=m2power) if self.state == 'rw' else self.m2.rw(power=m2power)
-                #self.m2.rw(power=(power-50)*2) if self.state == 'fw' else self.m2.fw(power=(power-50)*2)
             else:
                 # LIGHT TURN  (same direction, but slower motors)
                 m2power = ((50-steerpower)*2/100.)*self.power
                 self.m2.fw(power=m2power) if self.state == 'fw' else self.m2.rw(power=m2power)
-                #self.m2.fw(power=(50-power)*2) if self.state == 'fw' else self.m2.rw(power=(50-power)*2)
         else:
             self.m1.fw(power=self.power); self.m2.rw(power=self.power)
             m1power, m2power = self.power, self.power
@@ -194,7 +189,7 @@ class Rover():
         else: return None
 
     def print_distance(self):
-        dist = self.distance()
+        dist = self.distance()[1]
         if dist is None: print "Distance Measurement not initialized"
         else: print "Distance: %.2fcm" % dist
 

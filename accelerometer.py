@@ -35,7 +35,7 @@ class Accel():
     def getXYZ(self):
         return time(), self.getValueX(), self.getValueY(), self.getValueZ()
 
-    def _sampler(self, seconds=5, interval=0.010, verbose=False):
+    def _sampler(self, seconds=None, interval=0.010, verbose=False):
         itime = time(); counter = 0
         while self.continue_sampling:
             if (time() - itime) > seconds: break
@@ -48,7 +48,7 @@ class Accel():
         self.continue_sampling = True
         return self.samples
 
-    def sampler(self, seconds=5, interval=0.010, verbose=False):
+    def sampler(self, seconds=None, interval=0.010, verbose=False):
         self.thread = Thread(target = self._sampler, args = (seconds, interval, verbose))
         self.thread.start()
 

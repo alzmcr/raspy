@@ -171,7 +171,7 @@ class Rover():
 
         import pandas as pd
         acclog = pd.DataFrame(acclog, columns=['time','ax','ay','az','gx','gy','gz','mx','my','mz']).set_index('time')
-        carlog = pd.DataFrame(self.motorlog, columns=['time','action']).set_index('time')
+        carlog = pd.DataFrame(self.motorlog, columns=['time','action','m1','m2']).set_index('time')
         carlog['seq'] = range(len(carlog))
         data = pd.merge(acclog, carlog, how='outer', left_index=True, right_index=True)
         # reset data with star date

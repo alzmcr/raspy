@@ -1,7 +1,7 @@
 import keypad
 import RPi.GPIO as GPIO
 from time import time, sleep
-from accelerometer import Accel
+from imu import Imu
 from datetime import datetime
 
 if GPIO.getmode() == -1: GPIO.setmode(GPIO.BOARD)
@@ -12,7 +12,7 @@ class Rover():
     def __init__(self, m1, m2, jib=None, dist=None, verbose=False):
         self.m1 = m1
         self.m2 = m2
-        self.acc = Accel()
+        self.imu = Imu()
         self.dist = dist
         self.jib = jib
         self.motorlog = []
@@ -96,11 +96,13 @@ class Rover():
             if steerpower >=50:
                 # STRONG TURN (inverted direction on motors)
                 m1power = ((steerpower-50)*2/100.)*self.power
+                m1power = max(m1power, self.minpower)           # fixing low velocity turns
                 self.m1.rw(power=m1power) if self.state == 'fw' else self.m1.fw(power=m1power)
                 m1dir = 'rw' if self.state == 'fw' else 'fw'
             else:
                 # LIGHT TURN  (same direction, but slower motors)
                 m1power = ((50-steerpower)*2/100.)*self.power
+                m2power, m1power = max(m2power, 80), max(m1power, 80)           # fixing low velocity turns
                 self.m1.fw(power=m1power) if self.state == 'fw' else self.m1.rw(power=m1power)
                 m1dir = 'fw' if self.state == 'fw' else 'rw'
             # adjust m2 power to be at least twice the minimum combined power
@@ -124,6 +126,7 @@ class Rover():
             if steerpower >=50:
                 # STRONG TURN (inverted direction on motors)
                 m2power = ((steerpower-50)*2/100.)*self.power
+                m2power, m1power = max(m2power, 80), max(m1power, 80)           # fixing low velocity turns
                 self.m2.fw(power=m2power) if self.state == 'rw' else self.m2.rw(power=m2power)
                 m2dir = 'fw' if self.state == 'rw' else 'rw'
             else:
@@ -135,7 +138,7 @@ class Rover():
             m1power += max(0, self.minpower*2-(m2power+m1power))
             self.m1.fw(power=m1power) if self.state == 'fw' else self.m1.rw(power=m1power)
             m1dir = 'fw' if self.state == 'fw' else 'rw'
-            if self.verbose: print "left: %i%% | m1.%s: %i | m2.%s %i" % (steerpower,m1dir,m1power,m2dir,m2power)
+            if self.verbose: print "right: %i%% | m1.%s: %i | m2.%s %i" % (steerpower,m1dir,m1power,m2dir,m2power)
 
         else:
             self.m1.fw(power=self.power); self.m2.rw(power=self.power)
@@ -158,16 +161,16 @@ class Rover():
 
     # LOGGING
     def init_log(self, seconds=3600, interval=0.010):
-        self.motorlog = []; self.acc.samples = []   # reset motor logger
+        self.motorlog = []; self.imu.samples = []   # reset motor logger
         self.stop()                                 # stop car
-        self.acc.sampler(seconds, interval)         # start reading accelerometer
+        self.imu.sampler(seconds, interval)         # start reading accelerometer
 
     def save_log(self, savepath=None):
         self.stop()
-        acclog = self.acc.get_samples()
+        acclog = self.imu.get_samples()
 
         import pandas as pd
-        acclog = pd.DataFrame(acclog, columns=['time','x','y','z']).set_index('time')
+        acclog = pd.DataFrame(acclog, columns=['time','ax','ay','az','gx','gy','gz','mx','my','mz']).set_index('time')
         carlog = pd.DataFrame(self.motorlog, columns=['time','action']).set_index('time')
         carlog['seq'] = range(len(carlog))
         data = pd.merge(acclog, carlog, how='outer', left_index=True, right_index=True)

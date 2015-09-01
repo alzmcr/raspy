@@ -6,6 +6,7 @@ from time import sleep
 
 def train_data():
     from navigation import r
+    r.m1.use_pwm = False; r.m2.use_pwm = False
     r.init_log()
     sleep(1)
     r.left(2); sleep(1)

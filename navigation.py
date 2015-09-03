@@ -137,8 +137,8 @@ class Rover():
                     self.m2.rw(power=m2power); m2dir = 'rw'
             else:
                 # SOFTER TURN (same direction motors)
-                m1power = 100 - (steerpower * 10); m2power = self.power
-                if self.state == 'fw':
+                m2power = 100 - (steerpower * 10); m1power = self.power
+                if self.state == 'rw':
                     self.m1.fw(power=m1power); m1dir = 'fw'
                     self.m2.fw(power=m2power); m2dir = 'fw'
                 else:

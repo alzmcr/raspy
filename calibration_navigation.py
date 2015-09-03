@@ -84,14 +84,14 @@ if __name__ == '__main__':
              'carlog_20150811_224819','carlog_20150811_224909','carlog_20150811_234306','carlog_20150811_234353',
              'carlog_20150811_234550','carlog_20150812_213712',
     ]
-    files = ['carlog_20150901_215418','carlog_20150901_223121']
+    files = ['carlog_20150903_201244','carlog_20150903_201625']
     files = ['data/navigation_calibration/'+f+'.csv' for f in files]
 
 
     data = process_df(readfromfiles(files))
 
     rf = ensemble.RandomForestClassifier(random_state=3); rf.min_samples_leaf = 1; rf.n_estimators=10; df = data; model = rf
-    X = data[['ax', 'ay', 'az', 'gx', 'gy', 'gz', 'mx', 'my', 'mz', 'ax5', 'ay5', 'az5', 'gx5', 'gy5', 'gz5', 'mx5', 'my5', 'mz5']]
+    X = data[['pitch','roll','head','ax', 'ay', 'az', 'gx', 'gy', 'gz', 'mx', 'my', 'mz', 'ax5', 'ay5', 'az5', 'gx5', 'gy5', 'gz5', 'mx5', 'my5', 'mz5']]
     y = data.reset_index()['action']
 
     m = Model.fit_create(rf, X, y)
@@ -101,7 +101,8 @@ if __name__ == '__main__':
 
 
 def train_model(df, model):
-    X = df[['ax', 'ay', 'az', 'gx', 'gy', 'gz', 'mx', 'my', 'mz', 'ax5', 'ay5', 'az5', 'gx5', 'gy5', 'gz5', 'mx5', 'my5', 'mz5']].diff(2).fillna(0)                  # train set
+    X = df[['pitch','roll','head','ax', 'ay', 'az', 'gx', 'gy', 'gz', 'mx', 'my', 'mz', 'ax5', 'ay5', 'az5', 'gx5', 'gy5', 'gz5', 'mx5', 'my5', 'mz5']]                  # train set
+    X = X.groupby(level='seq').apply(lambda x: pd.rolling_mean(x,20,1).diff(20).bfill())
     y = df.reset_index()['action']                              # target
     files = df.reset_index()['fname'].unique().tolist()         # files used for train the model
 

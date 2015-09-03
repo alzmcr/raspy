@@ -20,8 +20,7 @@ class Rover():
         self.state = 'stop'
         self.power = 0
         self.steerpower = 0
-        self.minpower = 30
-        self.minsteerpower = 20
+        self.maxsteerpower = 3
         # DEBUG
         self.verbose = verbose
         print "Hi, I'm Rover... hopefully I won't roll over!"
@@ -88,27 +87,31 @@ class Rover():
         if seconds is not None:
             sleep(seconds); self.stop()
 
-    def _left(self, seconds=None, steerpower=100):
+    def _left(self, seconds=None, steerpower=1):
         if m1.use_pwm and m2.use_pwm:
-            # if the rover is not moving, rotating power is forced to 100
-            if self.state == 'stop': steerpower = 100; self.power = 100; self.state ='fw'
-            m2power = self.power
-            if steerpower >=50:
-                # STRONG TURN (inverted direction on motors)
-                m1power = ((steerpower-50)*2/100.)*self.power
-                m1power = max(m1power, self.minpower)           # fixing low velocity turns
-                self.m1.rw(power=m1power) if self.state == 'fw' else self.m1.fw(power=m1power)
-                m1dir = 'rw' if self.state == 'fw' else 'fw'
+            if self.state == 'stop': steerpower = 3; self.state = 'fw'
+            if self.power < 100:
+                # hard turn if speed is below 100%
+                steerpower = self.maxsteerpower
+
+            if steerpower == self.maxsteerpower:
+                # HARD TURN (reverse direction motors)
+                m1power = 100; m2power = self.power
+                if self.state == 'fw':
+                    self.m1.rw(power=m1power); m1dir = 'rw'
+                    self.m2.fw(power=m2power); m2dir = 'fw'
+                else:
+                    self.m1.fw(power=m1power); m1dir = 'fw'
+                    self.m2.rw(power=m2power); m2dir = 'rw'
             else:
-                # LIGHT TURN  (same direction, but slower motors)
-                m1power = ((50-steerpower)*2/100.)*self.power
-                m2power, m1power = max(m2power, 80), max(m1power, 80)           # fixing low velocity turns
-                self.m1.fw(power=m1power) if self.state == 'fw' else self.m1.rw(power=m1power)
-                m1dir = 'fw' if self.state == 'fw' else 'rw'
-            # adjust m2 power to be at least twice the minimum combined power
-            m2power += max(0, self.minpower*2-(m1power+m2power))
-            self.m2.rw(power=m2power) if self.state == 'rw' else self.m2.fw(power=m2power)
-            m2dir = 'rw' if self.state == 'rw' else 'fw'
+                # SOFTER TURN (same direction motors)
+                m1power = 100 - (steerpower * 10); m2power = self.power
+                if self.state == 'fw':
+                    self.m1.fw(power=m1power); m1dir = 'fw'
+                    self.m2.fw(power=m2power); m2dir = 'fw'
+                else:
+                    self.m1.rw(power=m1power); m1dir = 'rw'
+                    self.m2.rw(power=m2power); m2dir = 'rw'
             if self.verbose: print "left: %i%% | m1.%s: %i | m2.%s %i" % (steerpower,m1dir,m1power,m2dir,m2power)
         else:
             self.m1.rw(power=self.power); self.m2.fw(power=self.power)
@@ -118,36 +121,40 @@ class Rover():
         if seconds is not None:
             sleep(seconds); self.stop()
 
-    def _right(self, seconds=None, steerpower=100):
+    def _right(self, seconds=None, steerpower=1):
         if m1.use_pwm and m2.use_pwm:
-            # if the rover is not moving, rotating power is forced to 100
-            if self.state == 'stop': steerpower = 100; self.power = 100; self.state ='fw'
-            m1power = self.power
-            if steerpower >=50:
-                # STRONG TURN (inverted direction on motors)
-                m2power = ((steerpower-50)*2/100.)*self.power
-                m2power, m1power = max(m2power, 80), max(m1power, 80)           # fixing low velocity turns
-                self.m2.fw(power=m2power) if self.state == 'rw' else self.m2.rw(power=m2power)
-                m2dir = 'fw' if self.state == 'rw' else 'rw'
-            else:
-                # LIGHT TURN  (same direction, but slower motors)
-                m2power = ((50-steerpower)*2/100.)*self.power
-                self.m2.fw(power=m2power) if self.state == 'fw' else self.m2.rw(power=m2power)
-                m2dir = 'fw' if self.state == 'fw' else 'rw'
-            # adjust m2 power to be at least twice the minimum combined power
-            m1power += max(0, self.minpower*2-(m2power+m1power))
-            self.m1.fw(power=m1power) if self.state == 'fw' else self.m1.rw(power=m1power)
-            m1dir = 'fw' if self.state == 'fw' else 'rw'
-            if self.verbose: print "right: %i%% | m1.%s: %i | m2.%s %i" % (steerpower,m1dir,m1power,m2dir,m2power)
+            if self.state == 'stop': steerpower = 3; self.state = 'fw'
+            if self.power < 100:
+                # hard turn if speed is below 100%
+                steerpower = self.maxsteerpower
 
+            if steerpower == self.maxsteerpower:
+                # HARD TURN (reverse direction motors)
+                m1power = 100; m2power = self.power
+                if self.state == 'rw':
+                    self.m1.rw(power=m1power); m1dir = 'rw'
+                    self.m2.fw(power=m2power); m2dir = 'fw'
+                else:
+                    self.m1.fw(power=m1power); m1dir = 'fw'
+                    self.m2.rw(power=m2power); m2dir = 'rw'
+            else:
+                # SOFTER TURN (same direction motors)
+                m1power = 100 - (steerpower * 10); m2power = self.power
+                if self.state == 'rw':
+                    self.m1.fw(power=m1power); m1dir = 'fw'
+                    self.m2.fw(power=m2power); m2dir = 'fw'
+                else:
+                    self.m1.rw(power=m1power); m1dir = 'rw'
+                    self.m2.rw(power=m2power); m2dir = 'rw'
+            if self.verbose: print "right: %i%% | m1.%s: %i | m2.%s %i" % (steerpower,m1dir,m1power,m2dir,m2power)
         else:
-            self.m1.fw(power=self.power); self.m2.rw(power=self.power)
+            self.m1.rw(power=self.power); self.m2.fw(power=self.power)
             m1power, m2power = self.power, self.power
         # log motor
         self.motorlog.append([time(),'right',m1power,m2power])
-
         if seconds is not None:
             sleep(seconds); self.stop()
+
 
     def distance(self):
         if self.dist is not None:
@@ -170,7 +177,7 @@ class Rover():
         acclog = self.imu.get_samples()
 
         import pandas as pd
-        acclog = pd.DataFrame(acclog, columns=['time','pitch','roll','head','ax','ay','az','mx','my','mz','gx','gy','gz']).set_index('time')
+        acclog = pd.DataFrame(acclog, columns=['time','pitch','roll','heading','ax','ay','az','mx','my','mz','gx','gy','gz']).set_index('time')
         carlog = pd.DataFrame(self.motorlog, columns=['time','action','m1','m2']).set_index('time')
         carlog['seq'] = range(len(carlog))
         data = pd.merge(acclog, carlog, how='outer', left_index=True, right_index=True)

@@ -5,7 +5,7 @@ import math
 from LSM9DS0 import *
 import datetime
 
-class Imu():
+class Imu(object):
     def __init__(self):
         # initialize bus
         self.bus = smbus.SMBus(1)

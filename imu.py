@@ -5,10 +5,10 @@ from threading import Thread
 
 class Imu(BerryImu):
     def __init__(self):
+        super(Imu, self).__init__()
         self.continue_sampling = True
         self.samples = []
         self.thread = None
-        super(Imu, self).__init__()
 
     def _sampler(self, seconds=None, interval=0.025, verbose=False):
         itime = time(); counter = 0

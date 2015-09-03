@@ -1,23 +1,14 @@
 # Inertial Measurement Unit
-from pyberryimu.client import BerryIMUClient
+from berryimu import Imu as BerryImu
 from time import time, sleep
 from threading import Thread
 
-class Imu():
+class Imu(BerryImu):
     def __init__(self):
-        self.c = BerryIMUClient(bus=1)
         self.continue_sampling = True
         self.samples = []
         self.thread = None
-
-    def acc(self): return self.c.read_accelerometer()
-    def gyro(self): return self.c.read_gyroscope()
-    def magnet(self): return self.c.read_magnetometer()
-    def pressure(self): return self.c.read_pressure()
-    def temperature(self): return self.c.read_temperature()
-
-    def read(self):
-        return [time()] + list(self.acc()) + list(self.gyro()) + list(self.magnet())
+        super(Imu, self).__init__()
 
     def _sampler(self, seconds=None, interval=0.025, verbose=False):
         itime = time(); counter = 0

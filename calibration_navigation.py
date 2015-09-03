@@ -67,14 +67,14 @@ def process_df(df):
     df[['action','seq']] = df[['action','seq']].ffill()
     df = df.reset_index().set_index(['fname','seq','action','time']).sort_index()
     # process features
-    df[['x','y','z']] = df[['x','y','z']].apply(process)
+    #df[['ax','ay','az','gx','gy','gz','mx','my','mz']] = df[['ax','ay','az','gx','gy','gz','mx','my','mz']].apply(process)
     # create new features
-    df[['x5','y5','z5']] = df.groupby(level=['fname','seq','action'])[['x','y','z']].apply(lambda x: pd.rolling_mean(x,5,1))
+    df[['ax5','ay5','az5','gx5','gy5','gz5','mx5','my5','mz5']] = df.groupby(level=['fname','seq','action'])[['ax','ay','az','gx','gy','gz','mx','my','mz']].apply(lambda x: pd.rolling_mean(x,10,1,center=True))
 
     # cleaning
     df[df.columns] = df.groupby(level=['fname','seq','action'])[df.columns].ffill().bfill()
-    idx = df[['x','y','z']].isnull().sum(axis=1) == 0
-    df = df[idx]#.query('action!="stop"')#.query('action in ("fw","rw")')
+    idx = df[['ax','ay','az','gx','gy','gz','mx','my','mz']].isnull().sum(axis=1) == 0
+    df = df[idx].query('action!="stop"')#.query('action in ("fw","rw")')
     # return df
     return df
 
@@ -84,14 +84,14 @@ if __name__ == '__main__':
              'carlog_20150811_224819','carlog_20150811_224909','carlog_20150811_234306','carlog_20150811_234353',
              'carlog_20150811_234550','carlog_20150812_213712',
     ]
-    #files = ['carlog_20150812_213712']
+    files = ['carlog_20150901_215418','carlog_20150901_223121']
     files = ['data/navigation_calibration/'+f+'.csv' for f in files]
 
 
     data = process_df(readfromfiles(files))
 
-    rf = ensemble.RandomForestClassifier(random_state=3); rf.min_samples_leaf = 1; rf.n_estimators=10
-    X = data[['x','y','z']+ ['x5','y5','z5']]
+    rf = ensemble.RandomForestClassifier(random_state=3); rf.min_samples_leaf = 1; rf.n_estimators=10; df = data; model = rf
+    X = data[['ax', 'ay', 'az', 'gx', 'gy', 'gz', 'mx', 'my', 'mz', 'ax5', 'ay5', 'az5', 'gx5', 'gy5', 'gz5', 'mx5', 'my5', 'mz5']]
     y = data.reset_index()['action']
 
     m = Model.fit_create(rf, X, y)
@@ -101,7 +101,7 @@ if __name__ == '__main__':
 
 
 def train_model(df, model):
-    X = df[['x', 'y', 'z', 'x5', 'y5', 'z5']]                   # train set
+    X = df[['ax', 'ay', 'az', 'gx', 'gy', 'gz', 'mx', 'my', 'mz', 'ax5', 'ay5', 'az5', 'gx5', 'gy5', 'gz5', 'mx5', 'my5', 'mz5']].diff(2).fillna(0)                  # train set
     y = df.reset_index()['action']                              # target
     files = df.reset_index()['fname'].unique().tolist()         # files used for train the model
 
@@ -117,3 +117,9 @@ def train_model(df, model):
 
     return model.fit(X,y)
 
+
+if False:
+    import matplotlib.pyplot as plt
+    for i,col in enumerate(['ax5','ay5','az5','gx5','gy5','gz5','mx5','my5','mz5']):
+        plt.subplot(911 + i)
+        data.reset_index().set_index('time')[col].plot()

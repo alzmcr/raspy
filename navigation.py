@@ -1,10 +1,7 @@
 import keypad
-import RPi.GPIO as GPIO
 from time import time, sleep
 from imu import Imu
 from datetime import datetime
-
-if GPIO.getmode() == -1: GPIO.setmode(GPIO.BOARD)
 
 def interp(x,x0,x1,y0,y1): return y0 + (y1-y0) * (float(x-x0)/(x1-x0))
 
@@ -19,6 +16,7 @@ class Rover():
         # CURRENT STATE
         self.state = 'stop'
         self.power = 0
+        self.minpower = 30
         self.steerpower = 0
         self.maxsteerpower = 3
         # DEBUG
@@ -63,13 +61,13 @@ class Rover():
 
     def left(self, seconds=None):
         if m1.use_pwm and m2.use_pwm:
-            self.steerpower = min(100, max(self.minsteerpower, self.steerpower + 10))
+            self.steerpower = max(0, min(self.maxsteerpower, self.steerpower + 1))
             self._left(seconds, steerpower=self.steerpower)
         else: self._left(seconds)
 
     def right(self, seconds=None):
         if m1.use_pwm and m2.use_pwm:
-            self.steerpower = min(100, max(self.minsteerpower, self.steerpower + 10))
+            self.steerpower = max(0, min(self.maxsteerpower, self.steerpower + 1))
             self._right(seconds, steerpower=self.steerpower)
         else: self._right(seconds)
 

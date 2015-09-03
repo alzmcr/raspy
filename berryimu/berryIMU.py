@@ -1,5 +1,5 @@
 import smbus
-import time
+from time import time
 import operator
 import math
 from LSM9DS0 import *
@@ -82,7 +82,7 @@ class Imu(object):
         MAGx,MAGy,MAGz = self.readMAG()
         GYRx,GYRy,GYRz = self.readGYR()
         pitch,roll,heading = self.pitch_roll_heading(ACCx,ACCy,ACCz,MAGx,MAGy,MAGz)
-        return pitch,roll,heading,ACCx,ACCy,ACCz,MAGx,MAGy,MAGz,GYRx,GYRy,GYRz
+        return time(),pitch,roll,heading,ACCx,ACCy,ACCz,MAGx,MAGy,MAGz,GYRx,GYRy,GYRz
 
 
 if False:

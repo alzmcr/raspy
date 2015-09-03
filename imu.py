@@ -10,11 +10,11 @@ class Imu(BerryImu):
         self.samples = []
         self.thread = None
 
-    def _sampler(self, seconds=None, interval=0.025, verbose=False):
+    def _sampler(self, seconds=None, interval=0.020, verbose=False):
         itime = time(); counter = 0
         while self.continue_sampling:
             if (time() - itime) > seconds: break
-            self.samples.append(self.read())
+            self.samples.append(self.reading())
             counter += 1
             rtime = (counter * interval) - (time() - itime)
             rtime = rtime if rtime > 0 else 0
@@ -23,7 +23,7 @@ class Imu(BerryImu):
         self.continue_sampling = True
         return self.samples
 
-    def sampler(self, seconds=None, interval=0.025, verbose=False):
+    def sampler(self, seconds=None, interval=0.020, verbose=False):
         self.thread = Thread(target = self._sampler, args = (seconds, interval, verbose))
         self.thread.start()
 

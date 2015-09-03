@@ -48,14 +48,16 @@ class Rover():
     def fw(self, seconds=None):
         if m1.use_pwm and m2.use_pwm:
             if self.state == 'rw': self.power = 0
-            self.power = min(100, max(self.minpower, self.power + 10)); self.steerpower = 0
+            increase = 10 if self.steerpower == 0 else 0
+            self.power = min(100, max(self.minpower, self.power + increase)); self.steerpower = 0
             self._fw(seconds, power=self.power)
         else: self._fw(seconds)
 
     def rw(self, seconds=None):
         if m1.use_pwm and m2.use_pwm:
             if self.state == 'fw': self.power = 0
-            self.power = min(100, max(self.minpower, self.power + 10)); self.steerpower = 0
+            increase = 10 if self.steerpower == 0 else 0
+            self.power = min(100, max(self.minpower, self.power + increase)); self.steerpower = 0
             self._rw(seconds, power=self.power)
         else: self._rw(seconds)
 

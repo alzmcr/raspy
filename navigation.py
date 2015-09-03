@@ -170,7 +170,7 @@ class Rover():
         acclog = self.imu.get_samples()
 
         import pandas as pd
-        acclog = pd.DataFrame(acclog, columns=['time','ax','ay','az','gx','gy','gz','mx','my','mz']).set_index('time')
+        acclog = pd.DataFrame(acclog, columns=['time','pitch','roll','head','ax','ay','az','mx','my','mz','gx','gy','gz']).set_index('time')
         carlog = pd.DataFrame(self.motorlog, columns=['time','action','m1','m2']).set_index('time')
         carlog['seq'] = range(len(carlog))
         data = pd.merge(acclog, carlog, how='outer', left_index=True, right_index=True)

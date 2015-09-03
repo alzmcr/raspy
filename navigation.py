@@ -94,7 +94,7 @@ class Rover():
 
             if steerpower == self.maxsteerpower:
                 # HARD TURN (reverse direction motors)
-                m1power = 100; m2power = self.power
+                m1power = 100; m2power = 100
                 if self.state == 'fw':
                     self.m1.rw(power=m1power); m1dir = 'rw'
                     self.m2.fw(power=m2power); m2dir = 'fw'
@@ -128,7 +128,7 @@ class Rover():
 
             if steerpower == self.maxsteerpower:
                 # HARD TURN (reverse direction motors)
-                m1power = 100; m2power = self.power
+                m1power = 100; m2power = 100
                 if self.state == 'rw':
                     self.m1.rw(power=m1power); m1dir = 'rw'
                     self.m2.fw(power=m2power); m2dir = 'fw'

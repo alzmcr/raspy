@@ -53,8 +53,8 @@ class Imu(object):
         return acc_combined  if acc_combined < 32768 else acc_combined - 65536
 
     def readACCx(self): return self._read('ACC','x') - self.zeroACCx
-    def readACCy(self): return self._read('ACC','y') - self.zeroACCx
-    def readACCz(self): return self._read('ACC','z') - self.zeroACCx
+    def readACCy(self): return self._read('ACC','y') - self.zeroACCy
+    def readACCz(self): return self._read('ACC','z') - self.zeroACCz
     def readMAGx(self): return self._read('MAG','x')
     def readMAGy(self): return self._read('MAG','y')
     def readMAGz(self): return self._read('MAG','z')

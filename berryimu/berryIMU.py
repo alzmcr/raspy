@@ -28,6 +28,7 @@ class Imu(object):
         #initialise the accelerometer
         self.bus.write_byte_data(ACC_ADDRESS, CTRL_REG1_XM, 0b01100111) #z,y,x axis enabled, continuos update,  100Hz data rate
         self.bus.write_byte_data(ACC_ADDRESS, CTRL_REG2_XM, 0b00100000) #+/- 16G full scale
+        self.zeroACCx = 0; self.zeroACCy = 0; self.zeroACCz = 0         #zero
     def setupMAG(self):
         #initialise the magnetometer
         self.bus.write_byte_data(MAG_ADDRESS, CTRL_REG5_XM, 0b11110000) #Temp enable, M data rate = 50Hz
@@ -38,15 +39,22 @@ class Imu(object):
         self.bus.write_byte_data(GYR_ADDRESS, CTRL_REG1_G, 0b00001111) #Normal power mode, all axes enabled
         self.bus.write_byte_data(GYR_ADDRESS, CTRL_REG4_G, 0b00110000) #Continuos update, 2000 dps full scale
 
+    def calibrateACC(self):
+        # calibrate accelorometer assuming it's a flat position
+        print "MAKE SURE THAT THE ACCELEROMETER IS A FLAT POSITION!"
+        self.zeroACCx = sum([self.readACCx() for _ in range(1000)]) / 1000
+        self.zeroACCy = sum([self.readACCy() for _ in range(1000)]) / 1000
+        self.zeroACCz = sum([self.readACCz() for _ in range(1000)]) / 1000 - 1000
+
     def _read(self, sensor, axis):
         acc_l = self.bus.read_byte_data(self.sensors[sensor]['address'], self.sensors[sensor][axis][0])
         acc_h = self.bus.read_byte_data(self.sensors[sensor]['address'], self.sensors[sensor][axis][1])
         acc_combined = (acc_l | acc_h <<8)
         return acc_combined  if acc_combined < 32768 else acc_combined - 65536
 
-    def readACCx(self): return self._read('ACC','x')
-    def readACCy(self): return self._read('ACC','y')
-    def readACCz(self): return self._read('ACC','z')
+    def readACCx(self): return self._read('ACC','x') - self.zeroACCx
+    def readACCy(self): return self._read('ACC','y') - self.zeroACCx
+    def readACCz(self): return self._read('ACC','z') - self.zeroACCx
     def readMAGx(self): return self._read('MAG','x')
     def readMAGy(self): return self._read('MAG','y')
     def readMAGz(self): return self._read('MAG','z')

@@ -5,6 +5,12 @@ import math
 from LSM9DS0 import *
 import datetime
 
+RAD_TO_DEG = 180 / math.pi
+DEG_TO_RAD = math.pi / 180
+
+def rad2deg(rad): return rad * RAD_TO_DEG
+def deg2rad(rad): return rad * DEG_TO_RAD
+
 class Imu(object):
     def __init__(self):
         # initialize bus
@@ -56,8 +62,9 @@ class Imu(object):
         if MAGx is None or MAGy is None:
             # get reading on the fly if not provided
             MAGx, MAGy = self.readMAGx(), self.readMAGy()
-        heading = 180 * math.atan2(MAGy,MAGx)/math.pi
-        return heading + 360 if heading < 0 else heading
+        heading = math.atan2(MAGy,MAGx)
+        heading = rad2deg(heading)
+        return heading
 
     def pitch_roll_heading(self, ACCx=None, ACCy=None, ACCz=None, MAGx=None, MAGy=None, MAGz=None):
         if reduce(operator.__or__,map(lambda x: x is None, [ACCx,ACCy,ACCz,MAGx,MAGy,MAGz])):
@@ -73,8 +80,9 @@ class Imu(object):
         magXcomp = MAGx*math.cos(pitch)+MAGz*math.sin(pitch)
         magYcomp = MAGx*math.sin(roll)*math.sin(pitch)+MAGy*math.cos(roll)-MAGz*math.sin(roll)*math.cos(pitch)
         # Calculate tilt compensated heading
-        heading = 180 * math.atan2(magYcomp,magXcomp)/math.pi
-        heading = heading + 360 if heading < 0 else heading
+        heading = math.atan2(magYcomp,magXcomp)
+        # Conversion to degree from radiants
+        pitch, roll, heading = rad2deg(pitch), rad2deg(roll), rad2deg(heading)
         return pitch, roll, heading
 
     def reading(self):
@@ -102,7 +110,7 @@ if False:
         #Read our accelerometer,gyroscope and magnetometer  values
         ACCx = readACCx();ACCy = readACCy();ACCz = readACCz()
         GYRx = readGYRx();GYRy = readGYRx();GYRz = readGYRx()
-        MAGx = readMAGx();MAGy = readMAGy();MAGz = readMAGz()
+        MAGx = readMAGx();MAGy =     readMAGy();MAGz = readMAGz()
         ##Convert Accelerometer values to degrees
         AccXangle =  (math.atan2(ACCy,ACCz)+math.pi)*RAD_TO_DEG
         AccYangle =  (math.atan2(ACCz,ACCx)+math.pi)*RAD_TO_DEG
